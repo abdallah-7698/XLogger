@@ -141,20 +141,22 @@ export function LogTable({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 });
 
-  // Update container size on mount and resize
+  // Update container size on mount and whenever the container resizes
   useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
         setContainerSize({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
         });
       }
-    };
+    });
 
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Keyboard navigation
@@ -198,7 +200,11 @@ export function LogTable({
   }
 
   return (
-    <div ref={containerRef} className="flex-1 bg-white dark:bg-zinc-900">
+    <div ref={containerRef} className="flex-1 bg-white dark:bg-zinc-900 overflow-hidden">
+      {/* Section Title */}
+      <div className="h-8 flex items-center px-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Log Entries</span>
+      </div>
       {/* Table Header */}
       <div className="flex items-center gap-3 px-4 h-8 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
         <div className="w-1 flex-shrink-0" />
@@ -220,7 +226,7 @@ export function LogTable({
       </div>
 
       {/* Virtualized List */}
-      <div style={{ height: containerSize.height - 32 }}>
+      <div style={{ height: containerSize.height - 64 }}>
         <List
           listRef={listRef}
           rowComponent={LogRow}

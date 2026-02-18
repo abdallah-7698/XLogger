@@ -1,7 +1,6 @@
 import type { LogEntry } from '../lib/types';
 import { levelColors, levelLabels, categoryLabels } from '../lib/constants';
 import { format, parseISO } from 'date-fns';
-import { ScrollArea } from './ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
@@ -35,12 +34,17 @@ export function LogInspector({ log }: LogInspectorProps) {
 
   if (!log) {
     return (
-      <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
-        <div className="text-center px-4">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">No log selected</p>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-            Select a log entry to view details
-          </p>
+      <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+        <div className="h-8 flex items-center px-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
+          <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Inspector</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center px-4">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">No log selected</p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+              Select a log entry to view details
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -139,6 +143,10 @@ export function LogInspector({ log }: LogInspectorProps) {
 
   return (
     <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+      {/* Section Title */}
+      <div className="h-8 flex items-center px-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
+        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Inspector</span>
+      </div>
       {/* Header */}
       <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         <div className="flex items-center gap-2 mb-2">
@@ -158,7 +166,7 @@ export function LogInspector({ log }: LogInspectorProps) {
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         {/* Context Section */}
         <InspectorSection title="Context" isExpanded={contextExpanded} onToggle={setContextExpanded}>
           <InspectorField label="File" value={log.file} monospace />
@@ -260,7 +268,7 @@ export function LogInspector({ log }: LogInspectorProps) {
             )}
           </InspectorSection>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

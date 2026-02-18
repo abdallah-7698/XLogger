@@ -1,8 +1,7 @@
-import { Bug, Info, AlertTriangle, XCircle, AlertOctagon, Network, Layout, Gauge, Database, Clock } from 'lucide-react';
+import { Bug, Info, AlertTriangle, XCircle, AlertOctagon, Network, Layout, Gauge, Database, Clock, List } from 'lucide-react';
 import type { LogLevel, LogCategory } from '../lib/types';
 import { levelLabels, categoryLabels } from '../lib/constants';
 import { Badge } from './ui/badge';
-import { ScrollArea } from './ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -14,7 +13,8 @@ interface LoggerSidebarProps {
   onSelectCategory: (category: LogCategory | 'all') => void;
   levelCounts: Record<LogLevel, number>;
   categoryCounts: Record<LogCategory, number>;
-  totalCount: number;
+  levelAllCount: number;
+  categoryAllCount: number;
 }
 
 const levelIcons = {
@@ -40,7 +40,8 @@ export function LoggerSidebar({
   onSelectCategory,
   levelCounts,
   categoryCounts,
-  totalCount,
+  levelAllCount,
+  categoryAllCount,
 }: LoggerSidebarProps) {
   const [levelsExpanded, setLevelsExpanded] = useState(true);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
@@ -72,8 +73,42 @@ export function LoggerSidebar({
 
   return (
     <div className="w-full h-full border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-4">
+        <div className="h-8 flex items-center px-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
+          <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Filters</span>
+        </div>
+        <div className="p-2 space-y-4 overflow-y-auto flex-1">
+          {/* Categories Section */}
+          <Collapsible open={categoriesExpanded} onOpenChange={setCategoriesExpanded}>
+            <CollapsibleTrigger className="flex items-center gap-1 px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors w-full">
+              {categoriesExpanded ? (
+                <ChevronDown className="size-3" />
+              ) : (
+                <ChevronRight className="size-3" />
+              )}
+              Log Categories
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-0.5 mt-1">
+              {renderSidebarItem(
+                'all-categories',
+                'All Categories',
+                List,
+                categoryAllCount,
+                selectedCategory === 'all',
+                () => onSelectCategory('all')
+              )}
+              {(Object.keys(categoryIcons) as LogCategory[]).map((category) =>
+                renderSidebarItem(
+                  category,
+                  categoryLabels[category],
+                  categoryIcons[category],
+                  categoryCounts[category],
+                  selectedCategory === category,
+                  () => onSelectCategory(category)
+                )
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+
           {/* Log Levels Section */}
           <Collapsible open={levelsExpanded} onOpenChange={setLevelsExpanded}>
             <CollapsibleTrigger className="flex items-center gap-1 px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors w-full">
@@ -82,14 +117,14 @@ export function LoggerSidebar({
               ) : (
                 <ChevronRight className="size-3" />
               )}
-              Log Levels
+              Severity Levels
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-0.5 mt-1">
               {renderSidebarItem(
                 'all-levels',
-                'All',
-                Info,
-                totalCount,
+                'All Levels',
+                List,
+                levelAllCount,
                 selectedLevel === 'all',
                 () => onSelectLevel('all')
               )}
@@ -105,32 +140,7 @@ export function LoggerSidebar({
               )}
             </CollapsibleContent>
           </Collapsible>
-
-          {/* Categories Section */}
-          <Collapsible open={categoriesExpanded} onOpenChange={setCategoriesExpanded}>
-            <CollapsibleTrigger className="flex items-center gap-1 px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors w-full">
-              {categoriesExpanded ? (
-                <ChevronDown className="size-3" />
-              ) : (
-                <ChevronRight className="size-3" />
-              )}
-              Categories
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-0.5 mt-1">
-              {(Object.keys(categoryIcons) as LogCategory[]).map((category) =>
-                renderSidebarItem(
-                  category,
-                  categoryLabels[category],
-                  categoryIcons[category],
-                  categoryCounts[category],
-                  selectedCategory === category,
-                  () => onSelectCategory(category)
-                )
-              )}
-            </CollapsibleContent>
-          </Collapsible>
         </div>
-      </ScrollArea>
     </div>
   );
 }

@@ -32,9 +32,7 @@ export function LoggerToolbar({
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
-    if (theme === 'dark') setTheme('light');
-    else if (theme === 'light') setTheme('system');
-    else setTheme('dark');
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (

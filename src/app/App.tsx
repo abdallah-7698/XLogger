@@ -63,7 +63,8 @@ function LoggerApp() {
     });
   }, [logs, selectedLevel, selectedCategory, searchQuery]);
 
-  // Calculate counts for sidebar
+  // Calculate counts for sidebar (context-aware)
+  // Level counts consider the active category filter
   const levelCounts = useMemo(() => {
     const counts: Record<LogLevel, number> = {
       debug: 0,
@@ -73,11 +74,13 @@ function LoggerApp() {
       critical: 0,
     };
     logs.forEach((log) => {
+      if (selectedCategory !== 'all' && log.category !== selectedCategory) return;
       counts[log.level]++;
     });
     return counts;
-  }, [logs]);
+  }, [logs, selectedCategory]);
 
+  // Category counts consider the active level filter
   const categoryCounts = useMemo(() => {
     const counts: Record<LogCategory, number> = {
       network: 0,
@@ -87,10 +90,22 @@ function LoggerApp() {
       background: 0,
     };
     logs.forEach((log) => {
+      if (selectedLevel !== 'all' && log.level !== selectedLevel) return;
       counts[log.category]++;
     });
     return counts;
-  }, [logs]);
+  }, [logs, selectedLevel]);
+
+  // Total count for "All" reflects the other active filter
+  const levelAllCount = useMemo(() => {
+    if (selectedCategory === 'all') return logs.length;
+    return logs.filter((log) => log.category === selectedCategory).length;
+  }, [logs, selectedCategory]);
+
+  const categoryAllCount = useMemo(() => {
+    if (selectedLevel === 'all') return logs.length;
+    return logs.filter((log) => log.level === selectedLevel).length;
+  }, [logs, selectedLevel]);
 
   const handleCopyLog = useCallback((log: LogEntry) => {
     const logText = JSON.stringify(log, null, 2);
@@ -141,7 +156,8 @@ function LoggerApp() {
             onSelectCategory={setSelectedCategory}
             levelCounts={levelCounts}
             categoryCounts={categoryCounts}
-            totalCount={logs.length}
+            levelAllCount={levelAllCount}
+            categoryAllCount={categoryAllCount}
           />
           <div
             className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/50 z-10"

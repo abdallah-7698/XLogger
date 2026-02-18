@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { loadPrefs, savePrefs } from '../lib/tauriApi';
+import { useEffect, useRef } from 'react';
+import { loadPrefs, savePrefs, loadFolder, startWatching } from '../lib/tauriApi';
 import { useLogStore } from '../store/logStore';
 
 export interface AppPrefs {
@@ -10,14 +10,29 @@ export interface AppPrefs {
 }
 
 export function usePreferences() {
-  const { currentFolder, setCurrentFolder } = useLogStore();
+  const { currentFolder, setCurrentFolder, setLogs, setIsLoading } = useLogStore();
+  const hasRestored = useRef(false);
 
-  // Load preferences on mount
+  // Load preferences on mount and restore last folder
   useEffect(() => {
+    if (hasRestored.current) return;
+    hasRestored.current = true;
+
     loadPrefs()
-      .then((prefs) => {
+      .then(async (prefs) => {
         if (prefs.lastFolder && !currentFolder) {
+          setIsLoading(true);
           setCurrentFolder(prefs.lastFolder);
+          try {
+            const entries = await loadFolder(prefs.lastFolder);
+            setLogs(entries);
+            await startWatching(prefs.lastFolder);
+          } catch {
+            // Folder may no longer exist — clear it
+            setCurrentFolder(null);
+          } finally {
+            setIsLoading(false);
+          }
         }
       })
       .catch(() => {});
