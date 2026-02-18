@@ -12,6 +12,8 @@ import { useResizable } from './hooks/useResizable';
 import { useLogStore } from './store/logStore';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
+import { FolderOpen } from 'lucide-react';
+import { Button } from './components/ui/button';
 import type { LogEntry, LogLevel, LogCategory } from './lib/types';
 
 function LoggerApp() {
@@ -150,6 +152,34 @@ function LoggerApp() {
     onOpenFolder: handleOpenFolder,
   });
 
+  // Welcome screen when no folder is selected
+  if (!currentFolder && logs.length === 0) {
+    return (
+      <div className="h-screen w-screen flex flex-col bg-zinc-100 dark:bg-zinc-950">
+        <div className="h-10 pl-20 pr-4 flex-shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800" data-tauri-drag-region />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <FolderOpen className="size-12 text-zinc-300 dark:text-zinc-600 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              Welcome to XLogger
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+              Select a folder containing your log files to get started
+            </p>
+            <Button
+              onClick={handleOpenFolder}
+              className="px-6"
+            >
+              <FolderOpen className="size-4 mr-2" />
+              Open Log Folder
+            </Button>
+          </div>
+        </div>
+        <Toaster />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen w-screen flex flex-col bg-zinc-100 dark:bg-zinc-950">
       {/* Toolbar */}
@@ -168,7 +198,7 @@ function LoggerApp() {
       {/* Main Content - Three Column Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex-shrink-0 relative">
+        <div style={{ width: sidebarWidth, minWidth: 100 }} className="flex-shrink-0 relative overflow-hidden">
           <LoggerSidebar
             selectedCategory={selectedCategory}
             onSelectCategory={handleSelectCategory}
@@ -194,7 +224,7 @@ function LoggerApp() {
         />
 
         {/* Right - Inspector Panel */}
-        <div style={{ width: inspectorWidth }} className="flex-shrink-0 relative">
+        <div style={{ width: inspectorWidth, minWidth: 200 }} className="flex-shrink-0 relative overflow-hidden">
           <div
             className="absolute top-0 left-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/50 z-10"
             onMouseDown={inspectorResize.onMouseDown}

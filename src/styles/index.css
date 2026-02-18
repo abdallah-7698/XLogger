@@ -36,6 +36,19 @@
   background-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Text selection colors for readability */
+pre ::selection,
+pre::selection {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.dark pre ::selection,
+.dark pre::selection {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
 /* Prevent text selection on UI elements */
 button,
 .select-none {

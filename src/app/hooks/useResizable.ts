@@ -5,9 +5,7 @@ interface UseResizableOptions {
   minWidth: number;
   maxWidth: number;
   direction: 'left' | 'right';
-  /** Return the current width of the other side panel so we can enforce a minimum center width */
   getOtherWidth?: () => number;
-  /** Minimum width for the center panel (default 300) */
   minCenterWidth?: number;
 }
 
@@ -16,6 +14,18 @@ export function useResizable({ initialWidth, minWidth, maxWidth, direction, getO
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startWidth = useRef(0);
+
+  const clampWidth = useCallback((w: number) => {
+    let clamped = Math.min(maxWidth, Math.max(minWidth, w));
+    if (getOtherWidth) {
+      const windowWidth = window.innerWidth;
+      const otherWidth = getOtherWidth();
+      const maxAllowed = windowWidth - otherWidth - minCenterWidth;
+      clamped = Math.min(clamped, maxAllowed);
+      clamped = Math.max(minWidth, clamped);
+    }
+    return clamped;
+  }, [minWidth, maxWidth, getOtherWidth, minCenterWidth]);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
@@ -30,23 +40,22 @@ export function useResizable({ initialWidth, minWidth, maxWidth, direction, getO
     const onMouseMove = (e: MouseEvent) => {
       if (!isDragging.current) return;
       const delta = e.clientX - startX.current;
-      let newWidth = direction === 'left'
+      const raw = direction === 'left'
         ? startWidth.current + delta
         : startWidth.current - delta;
-      newWidth = Math.min(maxWidth, Math.max(minWidth, newWidth));
+      const clamped = clampWidth(raw);
 
-      // Enforce minimum center width
-      if (getOtherWidth) {
-        const windowWidth = window.innerWidth;
-        const otherWidth = getOtherWidth();
-        const availableForCenter = windowWidth - otherWidth - newWidth;
-        if (availableForCenter < minCenterWidth) {
-          newWidth = windowWidth - otherWidth - minCenterWidth;
-        }
+      const atLimit = clamped !== raw;
+      if (atLimit) {
+        // Reset anchor so user must drag back to limit before resizing resumes
+        startX.current = e.clientX;
+        startWidth.current = clamped;
+        document.body.style.cursor = 'not-allowed';
+      } else {
+        document.body.style.cursor = 'col-resize';
       }
 
-      newWidth = Math.max(minWidth, newWidth);
-      setWidth(newWidth);
+      setWidth(clamped);
     };
 
     const onMouseUp = () => {
@@ -63,7 +72,16 @@ export function useResizable({ initialWidth, minWidth, maxWidth, direction, getO
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [minWidth, maxWidth, direction, getOtherWidth, minCenterWidth]);
+  }, [minWidth, maxWidth, direction, clampWidth]);
+
+  // Re-clamp when window resizes
+  useEffect(() => {
+    const onResize = () => {
+      setWidth((prev) => clampWidth(prev));
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [clampWidth]);
 
   return { width, onMouseDown };
 }

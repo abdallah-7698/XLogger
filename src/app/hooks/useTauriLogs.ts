@@ -18,6 +18,7 @@ export function useTauriLogs() {
     appendLogs,
     clearLogs,
     setCurrentFolder,
+    setSelectedLog,
     setIsLoading,
     currentFolder,
   } = useLogStore();
@@ -51,6 +52,7 @@ export function useTauriLogs() {
       // Load all existing logs
       const entries = await loadFolder(folder);
       setLogs(entries);
+      setSelectedLog(entries.length > 0 ? entries[0] : null);
 
       // Start watching for new entries
       await startWatching(folder);
@@ -61,7 +63,7 @@ export function useTauriLogs() {
     } finally {
       setIsLoading(false);
     }
-  }, [setLogs, setCurrentFolder, setIsLoading]);
+  }, [setLogs, setSelectedLog, setCurrentFolder, setIsLoading]);
 
   const handleClearLogs = useCallback(async () => {
     try {
