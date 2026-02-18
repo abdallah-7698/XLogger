@@ -5,6 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collap
 import { useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 
 interface LogInspectorProps {
   log: LogEntry | null;
@@ -44,6 +45,7 @@ export function LogInspector({ log }: LogInspectorProps) {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
+    toast.success('Copied to clipboard');
   };
 
   if (!log) {
@@ -133,6 +135,18 @@ export function LogInspector({ log }: LogInspectorProps) {
   const isComplex = (v: unknown): boolean =>
     v !== null && typeof v === 'object' && (Array.isArray(v) ? v.length > 0 : Object.keys(v as object).length > 0);
 
+  const selectBracketGroup = (e: React.MouseEvent) => {
+    const bracket = e.currentTarget;
+    const group = bracket.closest('[data-bracket-group]');
+    if (!group) return;
+    const selection = window.getSelection();
+    if (!selection) return;
+    const range = document.createRange();
+    range.selectNodeContents(group);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  };
+
   const JsonValue = ({ value, depth = 0 }: { value: unknown; depth?: number }): ReactNode => {
     const indent = '  '.repeat(depth);
     const childIndent = '  '.repeat(depth + 1);
@@ -158,29 +172,20 @@ export function LogInspector({ log }: LogInspectorProps) {
         return <span className="text-zinc-500">[]</span>;
       }
       return (
-        <>
-          <span className="text-zinc-500">{'['}</span>
+        <span data-bracket-group>
+          <span className="text-zinc-500 cursor-pointer" onDoubleClick={selectBracketGroup}>{'['}</span>
           {'\n'}
           {value.map((item, idx) => (
             <span key={idx}>
-              {isComplex(item) ? (
-                <>
-                  {childIndent}
-                  <JsonValue value={item} depth={depth + 1} />
-                </>
-              ) : (
-                <>
-                  {childIndent}
-                  <JsonValue value={item} depth={depth + 1} />
-                </>
-              )}
+              {childIndent}
+              <JsonValue value={item} depth={depth + 1} />
               {idx < value.length - 1 && <span className="text-zinc-500">,</span>}
               {'\n'}
             </span>
           ))}
           {indent}
-          <span className="text-zinc-500">{']'}</span>
-        </>
+          <span className="text-zinc-500 cursor-pointer" onDoubleClick={selectBracketGroup}>{']'}</span>
+        </span>
       );
     }
 
@@ -190,8 +195,8 @@ export function LogInspector({ log }: LogInspectorProps) {
         return <span className="text-zinc-500">{'{}'}</span>;
       }
       return (
-        <>
-          <span className="text-zinc-500">{'{'}</span>
+        <span data-bracket-group>
+          <span className="text-zinc-500 cursor-pointer" onDoubleClick={selectBracketGroup}>{'{'}</span>
           {'\n'}
           {entries.map(([key, val], idx) => (
             <span key={key}>
@@ -215,15 +220,15 @@ export function LogInspector({ log }: LogInspectorProps) {
             </span>
           ))}
           {indent}
-          <span className="text-zinc-500">{'}'}</span>
-        </>
+          <span className="text-zinc-500 cursor-pointer" onDoubleClick={selectBracketGroup}>{'}'}</span>
+        </span>
       );
     }
 
     return <span>{String(value)}</span>;
   };
 
-  const JSONDisplay = ({ data, fieldId }: { data: unknown; fieldId: string }) => {
+  const JSONDisplay = ({ data, fieldId, fullHeight = false }: { data: unknown; fieldId: string; fullHeight?: boolean }) => {
     const jsonString = JSON.stringify(data, null, 2);
     const isCopied = copiedField === fieldId;
 
@@ -241,7 +246,7 @@ export function LogInspector({ log }: LogInspectorProps) {
             <Copy className="size-3 text-zinc-400" />
           )}
         </Button>
-        <pre className="text-xs font-mono bg-zinc-100 dark:bg-zinc-800 p-3 rounded overflow-auto max-h-72 whitespace-pre break-words">
+        <pre className={`text-xs font-mono bg-zinc-100 dark:bg-zinc-800 p-3 rounded overflow-auto whitespace-pre break-words ${fullHeight ? '' : 'max-h-72'}`}>
           <JsonValue value={data} />
         </pre>
       </div>
@@ -382,7 +387,7 @@ export function LogInspector({ log }: LogInspectorProps) {
             {log.networkDetails.responseBody && (
               <div className="mt-2">
                 <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Body</div>
-                <JSONDisplay data={log.networkDetails.responseBody} fieldId="res-body" />
+                <JSONDisplay data={log.networkDetails.responseBody} fieldId="res-body" fullHeight />
               </div>
             )}
           </InspectorSection>

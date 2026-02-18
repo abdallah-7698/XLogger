@@ -74,21 +74,21 @@ function LogRow({
           </div>
 
           {/* Level */}
-          <div className="w-20 flex-shrink-0 pt-0.5">
+          <div className="w-14 flex-shrink-0 pt-0.5">
             <span className="text-xs font-medium" style={{ color: levelColors[log.level] }}>
               {levelLabels[log.level]}
             </span>
           </div>
 
           {/* Category */}
-          <div className="w-32 flex-shrink-0 pt-0.5">
+          <div className="w-20 flex-shrink-0 pt-0.5">
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               {categoryLabels[log.category]}
             </span>
           </div>
 
           {/* Message */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-[80px]">
             <span className="text-xs text-zinc-900 dark:text-zinc-100 break-words whitespace-pre-wrap">
               {log.message}
             </span>
@@ -169,7 +169,7 @@ export function LogTable({
   }, [selectedLogId, logs, onSelectLog, onCopyLog]);
 
   return (
-    <div className="flex-1 bg-white dark:bg-zinc-900 overflow-hidden flex flex-col">
+    <div className="flex-1 min-w-[300px] bg-white dark:bg-zinc-900 overflow-hidden flex flex-col">
       {/* Level Filter Tabs */}
       <div className="h-8 flex items-center px-2 gap-1 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto flex-shrink-0">
         {levels.map((level) => {
@@ -203,10 +203,10 @@ export function LogTable({
         <div className="w-28 flex-shrink-0">
           <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Time</span>
         </div>
-        <div className="w-20 flex-shrink-0">
+        <div className="w-14 flex-shrink-0">
           <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Level</span>
         </div>
-        <div className="w-32 flex-shrink-0">
+        <div className="w-20 flex-shrink-0">
           <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Category</span>
         </div>
         <div className="flex-1 min-w-0">

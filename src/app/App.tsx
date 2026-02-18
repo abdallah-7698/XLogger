@@ -35,7 +35,7 @@ function LoggerApp() {
   usePreferences();
 
   const sidebarWidthRef = useRef(240);
-  const inspectorWidthRef = useRef(320);
+  const inspectorWidthRef = useRef(480);
 
   const sidebarResize = useResizable({
     initialWidth: 240, minWidth: 100, maxWidth: 400, direction: 'left',
@@ -45,7 +45,7 @@ function LoggerApp() {
   sidebarWidthRef.current = sidebarResize.width;
 
   const inspectorResize = useResizable({
-    initialWidth: 320, minWidth: 200, maxWidth: 900, direction: 'right',
+    initialWidth: 480, minWidth: 200, maxWidth: 900, direction: 'right',
     getOtherWidth: () => sidebarWidthRef.current,
     minCenterWidth: 300,
   });
