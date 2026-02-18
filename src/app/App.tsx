@@ -8,6 +8,7 @@ import { StatusBar } from './components/StatusBar';
 import { useTauriLogs } from './hooks/useTauriLogs';
 import { usePreferences } from './hooks/usePreferences';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useResizable } from './hooks/useResizable';
 import { useLogStore } from './store/logStore';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -32,6 +33,11 @@ function LoggerApp() {
 
   const { handleOpenFolder, handleClearLogs, handleExport } = useTauriLogs();
   usePreferences();
+
+  const sidebarResize = useResizable({ initialWidth: 240, minWidth: 160, maxWidth: 400, direction: 'left' });
+  const sidebarWidth = sidebarResize.width;
+  const inspectorResize = useResizable({ initialWidth: 320, minWidth: 200, maxWidth: 500, direction: 'right' });
+  const inspectorWidth = inspectorResize.width;
 
   // Filter logs based on level, category, and search query
   const filteredLogs = useMemo(() => {
@@ -127,15 +133,21 @@ function LoggerApp() {
       {/* Main Content - Three Column Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
-        <LoggerSidebar
-          selectedLevel={selectedLevel}
-          onSelectLevel={setSelectedLevel}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-          levelCounts={levelCounts}
-          categoryCounts={categoryCounts}
-          totalCount={logs.length}
-        />
+        <div style={{ width: sidebarWidth }} className="flex-shrink-0 relative">
+          <LoggerSidebar
+            selectedLevel={selectedLevel}
+            onSelectLevel={setSelectedLevel}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            levelCounts={levelCounts}
+            categoryCounts={categoryCounts}
+            totalCount={logs.length}
+          />
+          <div
+            className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/50 z-10"
+            onMouseDown={sidebarResize.onMouseDown}
+          />
+        </div>
 
         {/* Center - Log Table */}
         <LogTable
@@ -146,7 +158,13 @@ function LoggerApp() {
         />
 
         {/* Right - Inspector Panel */}
-        <LogInspector log={selectedLog} />
+        <div style={{ width: inspectorWidth }} className="flex-shrink-0 relative">
+          <div
+            className="absolute top-0 left-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/50 z-10"
+            onMouseDown={inspectorResize.onMouseDown}
+          />
+          <LogInspector log={selectedLog} />
+        </div>
       </div>
 
       {/* Status Bar */}

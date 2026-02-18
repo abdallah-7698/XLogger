@@ -71,7 +71,7 @@ export function LoggerSidebar({
   );
 
   return (
-    <div className="w-60 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+    <div className="w-full h-full border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-4">
           {/* Log Levels Section */}

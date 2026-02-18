@@ -35,7 +35,7 @@ export function LogInspector({ log }: LogInspectorProps) {
 
   if (!log) {
     return (
-      <div className="w-80 border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
+      <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
         <div className="text-center px-4">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No log selected</p>
           <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
@@ -138,7 +138,7 @@ export function LogInspector({ log }: LogInspectorProps) {
   };
 
   return (
-    <div className="w-80 border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+    <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
       {/* Header */}
       <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         <div className="flex items-center gap-2 mb-2">
