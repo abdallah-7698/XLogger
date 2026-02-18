@@ -152,6 +152,19 @@ pub fn parse_log_line(line: &str) -> Option<LogEntry> {
                 .unwrap_or("main")
                 .to_string();
 
+            let metadata = map
+                .get("metadata")
+                .and_then(|v| v.as_object())
+                .map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect());
+
+            let network_details = map
+                .get("networkDetails")
+                .and_then(|v| serde_json::from_value::<NetworkDetails>(v.clone()).ok());
+
+            let performance_details = map
+                .get("performanceDetails")
+                .and_then(|v| serde_json::from_value::<PerformanceDetails>(v.clone()).ok());
+
             return Some(LogEntry {
                 id,
                 timestamp,
@@ -169,9 +182,9 @@ pub fn parse_log_line(line: &str) -> Option<LogEntry> {
                     .get("queueLabel")
                     .and_then(|v| v.as_str())
                     .map(String::from),
-                metadata: None,
-                network_details: None,
-                performance_details: None,
+                metadata,
+                network_details,
+                performance_details,
             });
         }
     }

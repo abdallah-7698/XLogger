@@ -13,7 +13,6 @@ interface LoggerToolbarProps {
   onExport: () => void;
   onOpenFolder: () => void;
   totalLogs: number;
-  filteredLogs: number;
   currentFolder: string | null;
 }
 
@@ -26,7 +25,6 @@ export function LoggerToolbar({
   onExport,
   onOpenFolder,
   totalLogs,
-  filteredLogs,
   currentFolder,
 }: LoggerToolbarProps) {
   const { theme, setTheme } = useTheme();
@@ -132,7 +130,7 @@ export function LoggerToolbar({
           </span>
         )}
         <span className="font-mono">
-          {filteredLogs.toLocaleString()} / {totalLogs.toLocaleString()} logs
+          {totalLogs.toLocaleString()} logs
         </span>
         {isPaused && (
           <Badge variant="outline" className="h-5 px-1.5 text-xs border-amber-500 text-amber-600 dark:text-amber-500">

@@ -4,10 +4,14 @@ interface UseResizableOptions {
   initialWidth: number;
   minWidth: number;
   maxWidth: number;
-  direction: 'left' | 'right'; // 'left' = drag right edge, 'right' = drag left edge
+  direction: 'left' | 'right';
+  /** Return the current width of the other side panel so we can enforce a minimum center width */
+  getOtherWidth?: () => number;
+  /** Minimum width for the center panel (default 300) */
+  minCenterWidth?: number;
 }
 
-export function useResizable({ initialWidth, minWidth, maxWidth, direction }: UseResizableOptions) {
+export function useResizable({ initialWidth, minWidth, maxWidth, direction, getOtherWidth, minCenterWidth = 300 }: UseResizableOptions) {
   const [width, setWidth] = useState(initialWidth);
   const isDragging = useRef(false);
   const startX = useRef(0);
@@ -26,10 +30,23 @@ export function useResizable({ initialWidth, minWidth, maxWidth, direction }: Us
     const onMouseMove = (e: MouseEvent) => {
       if (!isDragging.current) return;
       const delta = e.clientX - startX.current;
-      const newWidth = direction === 'left'
+      let newWidth = direction === 'left'
         ? startWidth.current + delta
         : startWidth.current - delta;
-      setWidth(Math.min(maxWidth, Math.max(minWidth, newWidth)));
+      newWidth = Math.min(maxWidth, Math.max(minWidth, newWidth));
+
+      // Enforce minimum center width
+      if (getOtherWidth) {
+        const windowWidth = window.innerWidth;
+        const otherWidth = getOtherWidth();
+        const availableForCenter = windowWidth - otherWidth - newWidth;
+        if (availableForCenter < minCenterWidth) {
+          newWidth = windowWidth - otherWidth - minCenterWidth;
+        }
+      }
+
+      newWidth = Math.max(minWidth, newWidth);
+      setWidth(newWidth);
     };
 
     const onMouseUp = () => {
@@ -46,7 +63,7 @@ export function useResizable({ initialWidth, minWidth, maxWidth, direction }: Us
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [minWidth, maxWidth, direction]);
+  }, [minWidth, maxWidth, direction, getOtherWidth, minCenterWidth]);
 
   return { width, onMouseDown };
 }

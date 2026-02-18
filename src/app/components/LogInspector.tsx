@@ -2,7 +2,7 @@ import type { LogEntry } from '../lib/types';
 import { levelColors, levelLabels, categoryLabels } from '../lib/constants';
 import { format, parseISO } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -20,11 +20,25 @@ function formatTimestampFull(ts: string): string {
 }
 
 export function LogInspector({ log }: LogInspectorProps) {
-  const [contextExpanded, setContextExpanded] = useState(true);
+  const isNetwork = log?.category === 'network';
+  const [prevLogId, setPrevLogId] = useState<string | null>(null);
+  const [contextExpanded, setContextExpanded] = useState(!isNetwork);
   const [metadataExpanded, setMetadataExpanded] = useState(true);
-  const [networkExpanded, setNetworkExpanded] = useState(true);
+  const [requestExpanded, setRequestExpanded] = useState(!isNetwork);
+  const [responseExpanded, setResponseExpanded] = useState(true);
   const [performanceExpanded, setPerformanceExpanded] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Reset expanded states when selecting a different log
+  if (log && log.id !== prevLogId) {
+    setPrevLogId(log.id);
+    const net = log.category === 'network';
+    setContextExpanded(!net);
+    setRequestExpanded(!net);
+    setResponseExpanded(true);
+    setMetadataExpanded(true);
+    setPerformanceExpanded(true);
+  }
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -36,7 +50,7 @@ export function LogInspector({ log }: LogInspectorProps) {
     return (
       <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
         <div className="h-8 flex items-center px-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
-          <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Inspector</span>
+          <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Details</span>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-4">
@@ -116,7 +130,100 @@ export function LogInspector({ log }: LogInspectorProps) {
     );
   };
 
-  const JSONDisplay = ({ data, fieldId }: { data: any; fieldId: string }) => {
+  const isComplex = (v: unknown): boolean =>
+    v !== null && typeof v === 'object' && (Array.isArray(v) ? v.length > 0 : Object.keys(v as object).length > 0);
+
+  const JsonValue = ({ value, depth = 0 }: { value: unknown; depth?: number }): ReactNode => {
+    const indent = '  '.repeat(depth);
+    const childIndent = '  '.repeat(depth + 1);
+
+    if (value === null) {
+      return <span className="text-orange-600 dark:text-orange-400">null</span>;
+    }
+
+    if (typeof value === 'boolean') {
+      return <span className="text-orange-600 dark:text-orange-400">{String(value)}</span>;
+    }
+
+    if (typeof value === 'number') {
+      return <span className="text-blue-600 dark:text-blue-400">{value}</span>;
+    }
+
+    if (typeof value === 'string') {
+      return <span className="text-green-600 dark:text-green-400">"{value}"</span>;
+    }
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return <span className="text-zinc-500">[]</span>;
+      }
+      return (
+        <>
+          <span className="text-zinc-500">{'['}</span>
+          {'\n'}
+          {value.map((item, idx) => (
+            <span key={idx}>
+              {isComplex(item) ? (
+                <>
+                  {childIndent}
+                  <JsonValue value={item} depth={depth + 1} />
+                </>
+              ) : (
+                <>
+                  {childIndent}
+                  <JsonValue value={item} depth={depth + 1} />
+                </>
+              )}
+              {idx < value.length - 1 && <span className="text-zinc-500">,</span>}
+              {'\n'}
+            </span>
+          ))}
+          {indent}
+          <span className="text-zinc-500">{']'}</span>
+        </>
+      );
+    }
+
+    if (typeof value === 'object') {
+      const entries = Object.entries(value as Record<string, unknown>);
+      if (entries.length === 0) {
+        return <span className="text-zinc-500">{'{}'}</span>;
+      }
+      return (
+        <>
+          <span className="text-zinc-500">{'{'}</span>
+          {'\n'}
+          {entries.map(([key, val], idx) => (
+            <span key={key}>
+              {childIndent}
+              <span className="text-purple-600 dark:text-purple-400">"{key}"</span>
+              <span className="text-zinc-500">:</span>
+              {isComplex(val) ? (
+                <>
+                  {'\n'}
+                  {childIndent}
+                  <JsonValue value={val} depth={depth + 1} />
+                </>
+              ) : (
+                <>
+                  {' '}
+                  <JsonValue value={val} depth={depth + 1} />
+                </>
+              )}
+              {idx < entries.length - 1 && <span className="text-zinc-500">,</span>}
+              {'\n'}
+            </span>
+          ))}
+          {indent}
+          <span className="text-zinc-500">{'}'}</span>
+        </>
+      );
+    }
+
+    return <span>{String(value)}</span>;
+  };
+
+  const JSONDisplay = ({ data, fieldId }: { data: unknown; fieldId: string }) => {
     const jsonString = JSON.stringify(data, null, 2);
     const isCopied = copiedField === fieldId;
 
@@ -134,8 +241,8 @@ export function LogInspector({ log }: LogInspectorProps) {
             <Copy className="size-3 text-zinc-400" />
           )}
         </Button>
-        <pre className="text-xs font-mono bg-zinc-100 dark:bg-zinc-800 p-3 rounded overflow-x-auto max-h-48">
-          {jsonString}
+        <pre className="text-xs font-mono bg-zinc-100 dark:bg-zinc-800 p-3 rounded overflow-auto max-h-72 whitespace-pre break-words">
+          <JsonValue value={data} />
         </pre>
       </div>
     );
@@ -143,30 +250,53 @@ export function LogInspector({ log }: LogInspectorProps) {
 
   return (
     <div className="w-full h-full border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col">
-      {/* Section Title */}
-      <div className="h-8 flex items-center px-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
-        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Inspector</span>
-      </div>
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        <div className="flex items-center gap-2 mb-2">
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ backgroundColor: levelColors[log.level] }}
-          />
-          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            {levelLabels[log.level]}
-          </span>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">
-            {categoryLabels[log.category]}
-          </span>
-        </div>
-        <div className="text-xs font-mono text-zinc-600 dark:text-zinc-400">
+      {/* Header — compact single row */}
+      <div className="h-8 flex items-center gap-2 px-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
+        <div
+          className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{ backgroundColor: levelColors[log.level] }}
+        />
+        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+          {levelLabels[log.level]}
+        </span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          {categoryLabels[log.category]}
+        </span>
+        <span className="ml-auto text-[10px] font-mono text-zinc-400 dark:text-zinc-500 flex-shrink-0">
           {formatTimestampFull(log.timestamp)}
-        </div>
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        {/* Message Section — always on top */}
+        <div className="border-b border-zinc-200 dark:border-zinc-800">
+          <div className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+            Message
+          </div>
+          <div className="px-4 pb-3">
+            {(() => {
+              const trimmed = log.message.trim();
+              if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                try {
+                  const parsed = JSON.parse(trimmed);
+                  return (
+                    <pre className="text-xs font-mono bg-zinc-100 dark:bg-zinc-800 p-3 rounded overflow-auto max-h-72 whitespace-pre break-words">
+                      <JsonValue value={parsed} />
+                    </pre>
+                  );
+                } catch {
+                  // Not valid JSON, fall through
+                }
+              }
+              return (
+                <div className="text-xs text-zinc-900 dark:text-zinc-100 break-words bg-zinc-100 dark:bg-zinc-800 p-3 rounded">
+                  {log.message}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
         {/* Context Section */}
         <InspectorSection title="Context" isExpanded={contextExpanded} onToggle={setContextExpanded}>
           <InspectorField label="File" value={log.file} monospace />
@@ -176,18 +306,6 @@ export function LogInspector({ log }: LogInspectorProps) {
           <InspectorField label="Queue" value={log.queueLabel} monospace />
         </InspectorSection>
 
-        {/* Message Section */}
-        <div className="border-b border-zinc-200 dark:border-zinc-800">
-          <div className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-            Message
-          </div>
-          <div className="px-4 pb-3">
-            <div className="text-xs text-zinc-900 dark:text-zinc-100 break-words bg-zinc-100 dark:bg-zinc-800 p-3 rounded">
-              {log.message}
-            </div>
-          </div>
-        </div>
-
         {/* Metadata Section */}
         {log.metadata && (
           <InspectorSection
@@ -195,27 +313,36 @@ export function LogInspector({ log }: LogInspectorProps) {
             isExpanded={metadataExpanded}
             onToggle={setMetadataExpanded}
           >
-            {Object.entries(log.metadata).map(([key, value]) => (
-              <InspectorField
-                key={key}
-                label={key}
-                value={String(value)}
-                monospace={typeof value === 'number'}
-              />
-            ))}
+            {Object.entries(log.metadata).map(([key, value]) => {
+              if (typeof value === 'object' && value !== null) {
+                return (
+                  <div key={key}>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{key}</div>
+                    <JSONDisplay data={value} fieldId={`meta-${key}`} />
+                  </div>
+                );
+              }
+              return (
+                <InspectorField
+                  key={key}
+                  label={key}
+                  value={String(value)}
+                  monospace={typeof value === 'number'}
+                />
+              );
+            })}
           </InspectorSection>
         )}
 
-        {/* Network Details Section */}
+        {/* Network Request Section */}
         {log.networkDetails && (
           <InspectorSection
-            title="Network Details"
-            isExpanded={networkExpanded}
-            onToggle={setNetworkExpanded}
+            title="Request"
+            isExpanded={requestExpanded}
+            onToggle={setRequestExpanded}
           >
             <InspectorField label="URL" value={log.networkDetails.url} monospace />
             <InspectorField label="Method" value={log.networkDetails.method} />
-            <InspectorField label="Status Code" value={log.networkDetails.statusCode} monospace />
             <InspectorField
               label="Duration"
               value={`${log.networkDetails.duration}ms`}
@@ -224,21 +351,37 @@ export function LogInspector({ log }: LogInspectorProps) {
 
             {log.networkDetails.requestHeaders && (
               <div className="mt-3">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Request Headers</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Headers</div>
                 <JSONDisplay data={log.networkDetails.requestHeaders} fieldId="req-headers" />
               </div>
             )}
 
             {log.networkDetails.requestBody && (
               <div className="mt-3">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Request Body</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Body</div>
                 <JSONDisplay data={log.networkDetails.requestBody} fieldId="req-body" />
               </div>
             )}
+          </InspectorSection>
+        )}
+
+        {/* Network Response Section */}
+        {log.networkDetails && (
+          <InspectorSection
+            title="Response"
+            isExpanded={responseExpanded}
+            onToggle={setResponseExpanded}
+          >
+            <InspectorField label="Status Code" value={log.networkDetails.statusCode} monospace />
+            <InspectorField
+              label="Duration"
+              value={`${log.networkDetails.duration}ms`}
+              monospace
+            />
 
             {log.networkDetails.responseBody && (
-              <div className="mt-3">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Response Body</div>
+              <div className="mt-2">
+                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Body</div>
                 <JSONDisplay data={log.networkDetails.responseBody} fieldId="res-body" />
               </div>
             )}

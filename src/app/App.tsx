@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
 import { LoggerToolbar } from './components/LoggerToolbar';
 import { LoggerSidebar } from './components/LoggerSidebar';
 import { LogTable } from './components/LogTable';
@@ -34,9 +34,24 @@ function LoggerApp() {
   const { handleOpenFolder, handleClearLogs, handleExport } = useTauriLogs();
   usePreferences();
 
-  const sidebarResize = useResizable({ initialWidth: 240, minWidth: 160, maxWidth: 400, direction: 'left' });
+  const sidebarWidthRef = useRef(240);
+  const inspectorWidthRef = useRef(320);
+
+  const sidebarResize = useResizable({
+    initialWidth: 240, minWidth: 100, maxWidth: 400, direction: 'left',
+    getOtherWidth: () => inspectorWidthRef.current,
+    minCenterWidth: 300,
+  });
+  sidebarWidthRef.current = sidebarResize.width;
+
+  const inspectorResize = useResizable({
+    initialWidth: 320, minWidth: 200, maxWidth: 900, direction: 'right',
+    getOtherWidth: () => sidebarWidthRef.current,
+    minCenterWidth: 300,
+  });
+  inspectorWidthRef.current = inspectorResize.width;
+
   const sidebarWidth = sidebarResize.width;
-  const inspectorResize = useResizable({ initialWidth: 320, minWidth: 200, maxWidth: 500, direction: 'right' });
   const inspectorWidth = inspectorResize.width;
 
   // Filter logs based on level, category, and search query
@@ -80,7 +95,7 @@ function LoggerApp() {
     return counts;
   }, [logs, selectedCategory]);
 
-  // Category counts consider the active level filter
+  // Category counts always reflect all logs (not filtered by level)
   const categoryCounts = useMemo(() => {
     const counts: Record<LogCategory, number> = {
       network: 0,
@@ -90,11 +105,10 @@ function LoggerApp() {
       background: 0,
     };
     logs.forEach((log) => {
-      if (selectedLevel !== 'all' && log.level !== selectedLevel) return;
       counts[log.category]++;
     });
     return counts;
-  }, [logs, selectedLevel]);
+  }, [logs]);
 
   // Total count for "All" reflects the other active filter
   const levelAllCount = useMemo(() => {
@@ -102,10 +116,17 @@ function LoggerApp() {
     return logs.filter((log) => log.category === selectedCategory).length;
   }, [logs, selectedCategory]);
 
-  const categoryAllCount = useMemo(() => {
-    if (selectedLevel === 'all') return logs.length;
-    return logs.filter((log) => log.level === selectedLevel).length;
-  }, [logs, selectedLevel]);
+  const categoryAllCount = logs.length;
+
+  const handleSelectCategory = useCallback((category: LogCategory | 'all') => {
+    setSelectedCategory(category);
+    const firstMatch = logs.find((log) => {
+      if (category !== 'all' && log.category !== category) return false;
+      if (selectedLevel !== 'all' && log.level !== selectedLevel) return false;
+      return true;
+    });
+    setSelectedLog(firstMatch ?? null);
+  }, [logs, selectedLevel, setSelectedCategory, setSelectedLog]);
 
   const handleCopyLog = useCallback((log: LogEntry) => {
     const logText = JSON.stringify(log, null, 2);
@@ -141,7 +162,6 @@ function LoggerApp() {
         onExport={onExport}
         onOpenFolder={handleOpenFolder}
         totalLogs={logs.length}
-        filteredLogs={filteredLogs.length}
         currentFolder={currentFolder}
       />
 
@@ -150,13 +170,9 @@ function LoggerApp() {
         {/* Left Sidebar */}
         <div style={{ width: sidebarWidth }} className="flex-shrink-0 relative">
           <LoggerSidebar
-            selectedLevel={selectedLevel}
-            onSelectLevel={setSelectedLevel}
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            levelCounts={levelCounts}
+            onSelectCategory={handleSelectCategory}
             categoryCounts={categoryCounts}
-            levelAllCount={levelAllCount}
             categoryAllCount={categoryAllCount}
           />
           <div
@@ -171,6 +187,10 @@ function LoggerApp() {
           selectedLogId={selectedLog?.id ?? null}
           onSelectLog={setSelectedLog}
           onCopyLog={handleCopyLog}
+          selectedLevel={selectedLevel}
+          onSelectLevel={setSelectedLevel}
+          levelCounts={levelCounts}
+          levelAllCount={levelAllCount}
         />
 
         {/* Right - Inspector Panel */}
