@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { loadPrefs, savePrefs, loadFolder, startWatching } from '../lib/tauriApi';
-import { useLogStore } from '../store/logStore';
+
 import { getCurrentWindow } from '@tauri-apps/api/window';
+
+import { useLogStore } from '../store/logStore';
+
+import { loadPrefs, savePrefs, loadFolder, startWatching } from '../lib/tauriApi';
 
 export interface AppPrefs {
   lastFolder: string | null;

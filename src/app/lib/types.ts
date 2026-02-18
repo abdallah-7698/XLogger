@@ -1,5 +1,9 @@
+// --- Enums ---
+
 export type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'critical';
 export type LogCategory = 'network' | 'ui' | 'performance' | 'state' | 'background';
+
+// --- Detail types ---
 
 export interface NetworkDetails {
   url: string;
@@ -17,6 +21,8 @@ export interface PerformanceDetails {
   duration: number;
   memoryDelta?: number;
 }
+
+// --- Core log entry ---
 
 export interface LogEntry {
   id: string;

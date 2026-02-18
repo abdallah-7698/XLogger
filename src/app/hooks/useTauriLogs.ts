@@ -1,5 +1,9 @@
 import { useEffect, useCallback } from 'react';
+
+import { toast } from 'sonner';
+
 import { useLogStore } from '../store/logStore';
+
 import {
   openFolderDialog,
   loadFolder,
@@ -9,7 +13,7 @@ import {
   exportLogs,
   onNewLogEntries,
 } from '../lib/tauriApi';
-import { toast } from 'sonner';
+
 import type { LogEntry } from '../lib/types';
 
 export function useTauriLogs() {

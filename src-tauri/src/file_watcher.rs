@@ -1,10 +1,11 @@
-use notify::{Event, EventKind, RecursiveMode, Watcher};
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
+
+use notify::{Event, EventKind, RecursiveMode, Watcher};
 use tauri::{AppHandle, Emitter};
 
 use crate::log_parser::{parse_log_line, LogEntry};
@@ -102,7 +103,7 @@ fn is_log_file(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
-fn collect_log_files(dir: &Path) -> Vec<PathBuf> {
+pub fn collect_log_files(dir: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let entries = match fs::read_dir(dir) {
         Ok(e) => e,

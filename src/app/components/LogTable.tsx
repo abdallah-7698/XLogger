@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import type { LogEntry, LogLevel } from '../lib/types';
-import { levelColors, levelLabels, categoryLabels } from '../lib/constants';
+
 import { format, parseISO } from 'date-fns';
+import { Copy, FileText, Trash2 } from 'lucide-react';
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,7 +10,10 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from './ui/context-menu';
-import { Copy, FileText, Trash2 } from 'lucide-react';
+
+import { levelColors, levelLabels, categoryLabels } from '../lib/constants';
+
+import type { LogEntry, LogLevel } from '../lib/types';
 
 interface LogTableProps {
   logs: LogEntry[];

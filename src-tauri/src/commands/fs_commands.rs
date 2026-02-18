@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
+
 use tauri::State;
 
-use crate::file_watcher::read_file_entries;
+use crate::file_watcher::{collect_log_files, read_file_entries};
 use crate::log_parser::LogEntry;
 use crate::log_store::LogStore;
 
@@ -14,27 +15,6 @@ pub async fn open_folder_dialog(app: tauri::AppHandle) -> Result<Option<String>,
     let folder = app.dialog().file().blocking_pick_folder();
 
     Ok(folder.map(|p| p.to_string()))
-}
-
-fn collect_log_files(dir: &PathBuf) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    let entries = match fs::read_dir(dir) {
-        Ok(e) => e,
-        Err(_) => return files,
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.is_dir() {
-            files.extend(collect_log_files(&path));
-        } else if path.is_file() {
-            if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                if matches!(ext, "jsonl" | "log" | "json") {
-                    files.push(path);
-                }
-            }
-        }
-    }
-    files
 }
 
 #[tauri::command]

@@ -1,11 +1,15 @@
-import type { LogEntry } from '../lib/types';
-import { levelColors, levelLabels, categoryLabels } from '../lib/constants';
-import { format, parseISO } from 'date-fns';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
-import { Button } from './ui/button';
+
+import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
+import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
+
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Button } from './ui/button';
+
+import { levelColors, levelLabels, categoryLabels } from '../lib/constants';
+
+import type { LogEntry } from '../lib/types';
 
 interface LogInspectorProps {
   log: LogEntry | null;

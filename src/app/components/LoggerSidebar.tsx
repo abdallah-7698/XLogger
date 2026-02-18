@@ -1,7 +1,10 @@
 import { Network, Layout, Gauge, Database, Clock, List } from 'lucide-react';
-import type { LogCategory } from '../lib/types';
-import { categoryLabels } from '../lib/constants';
+
 import { Badge } from './ui/badge';
+
+import { categoryLabels } from '../lib/constants';
+
+import type { LogCategory } from '../lib/types';
 
 interface LoggerSidebarProps {
   selectedCategory: LogCategory | 'all';

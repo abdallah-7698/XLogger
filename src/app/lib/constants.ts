@@ -1,3 +1,5 @@
+// --- Level display ---
+
 export const levelColors: Record<string, string> = {
   debug: '#8E8E93',
   info: '#007AFF',
@@ -13,6 +15,8 @@ export const levelLabels: Record<string, string> = {
   error: 'Error',
   critical: 'Critical',
 };
+
+// --- Category display ---
 
 export const categoryLabels: Record<string, string> = {
   network: 'Network',

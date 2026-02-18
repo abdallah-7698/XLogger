@@ -1,7 +1,8 @@
-use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
+
+use parking_lot::RwLock;
 
 use crate::log_parser::LogEntry;
 

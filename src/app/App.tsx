@@ -1,19 +1,24 @@
 import { useMemo, useCallback, useRef } from 'react';
+
+import { toast } from 'sonner';
+import { FolderOpen } from 'lucide-react';
+
 import { LoggerToolbar } from './components/LoggerToolbar';
 import { LoggerSidebar } from './components/LoggerSidebar';
 import { LogTable } from './components/LogTable';
 import { LogInspector } from './components/LogInspector';
 import { ThemeProvider } from './components/ThemeProvider';
 import { StatusBar } from './components/StatusBar';
+import { Toaster } from './components/ui/sonner';
+import { Button } from './components/ui/button';
+
 import { useTauriLogs } from './hooks/useTauriLogs';
 import { usePreferences } from './hooks/usePreferences';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useResizable } from './hooks/useResizable';
+
 import { useLogStore } from './store/logStore';
-import { toast } from 'sonner';
-import { Toaster } from './components/ui/sonner';
-import { FolderOpen } from 'lucide-react';
-import { Button } from './components/ui/button';
+
 import type { LogEntry, LogLevel, LogCategory } from './lib/types';
 
 function LoggerApp() {
