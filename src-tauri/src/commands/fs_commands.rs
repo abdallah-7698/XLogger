@@ -16,6 +16,27 @@ pub async fn open_folder_dialog(app: tauri::AppHandle) -> Result<Option<String>,
     Ok(folder.map(|p| p.to_string()))
 }
 
+fn collect_log_files(dir: &PathBuf) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return files,
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            files.extend(collect_log_files(&path));
+        } else if path.is_file() {
+            if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                if matches!(ext, "jsonl" | "log" | "json") {
+                    files.push(path);
+                }
+            }
+        }
+    }
+    files
+}
+
 #[tauri::command]
 pub async fn load_folder(
     path: String,
@@ -31,19 +52,10 @@ pub async fn load_folder(
 
     let mut all_entries = Vec::new();
 
-    let entries = fs::read_dir(&folder).map_err(|e| e.to_string())?;
-    for entry in entries {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let file_path = entry.path();
-
-        if file_path.is_file() {
-            if let Some(ext) = file_path.extension().and_then(|e| e.to_str()) {
-                if matches!(ext, "jsonl" | "log" | "json") {
-                    let file_entries = read_file_entries(&file_path, &store);
-                    all_entries.extend(file_entries);
-                }
-            }
-        }
+    let log_files = collect_log_files(&folder);
+    for file_path in log_files {
+        let file_entries = read_file_entries(&file_path, &store);
+        all_entries.extend(file_entries);
     }
 
     // Sort by timestamp (newest first)

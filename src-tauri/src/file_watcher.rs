@@ -53,7 +53,7 @@ impl FileWatcher {
                 }
             })?;
 
-        watcher.watch(&folder, RecursiveMode::NonRecursive)?;
+        watcher.watch(&folder, RecursiveMode::Recursive)?;
         self.watcher = Some(watcher);
         self.watched_path = Some(folder);
         Ok(())

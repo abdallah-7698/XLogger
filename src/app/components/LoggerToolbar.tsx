@@ -38,7 +38,7 @@ export function LoggerToolbar({
   };
 
   return (
-    <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center px-4 gap-3" data-tauri-drag-region>
+    <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center pl-20 pr-4 gap-3" data-tauri-drag-region>
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
