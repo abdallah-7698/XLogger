@@ -45,9 +45,9 @@ export function useResizable({ initialWidth, minWidth, maxWidth, direction, getO
         : startWidth.current - delta;
       const clamped = clampWidth(raw);
 
-      const atLimit = clamped !== raw;
-      if (atLimit) {
-        // Reset anchor so user must drag back to limit before resizing resumes
+      // When hitting a limit, re-anchor so the panel stays locked
+      // and only moves once the mouse crosses back past the boundary
+      if (clamped !== raw) {
         startX.current = e.clientX;
         startWidth.current = clamped;
         document.body.style.cursor = 'not-allowed';

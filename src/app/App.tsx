@@ -40,16 +40,16 @@ function LoggerApp() {
   const inspectorWidthRef = useRef(480);
 
   const sidebarResize = useResizable({
-    initialWidth: 240, minWidth: 100, maxWidth: 400, direction: 'left',
+    initialWidth: 240, minWidth: 240, maxWidth: 400, direction: 'left',
     getOtherWidth: () => inspectorWidthRef.current,
-    minCenterWidth: 300,
+    minCenterWidth: 530,
   });
   sidebarWidthRef.current = sidebarResize.width;
 
   const inspectorResize = useResizable({
     initialWidth: 480, minWidth: 200, maxWidth: 900, direction: 'right',
     getOtherWidth: () => sidebarWidthRef.current,
-    minCenterWidth: 300,
+    minCenterWidth: 530,
   });
   inspectorWidthRef.current = inspectorResize.width;
 
@@ -198,7 +198,7 @@ function LoggerApp() {
       {/* Main Content - Three Column Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
-        <div style={{ width: sidebarWidth, minWidth: 100 }} className="flex-shrink-0 relative overflow-hidden">
+        <div style={{ width: sidebarWidth }} className="flex-shrink-0 relative">
           <LoggerSidebar
             selectedCategory={selectedCategory}
             onSelectCategory={handleSelectCategory}
@@ -224,7 +224,7 @@ function LoggerApp() {
         />
 
         {/* Right - Inspector Panel */}
-        <div style={{ width: inspectorWidth, minWidth: 200 }} className="flex-shrink-0 relative overflow-hidden">
+        <div style={{ width: inspectorWidth }} className="flex-shrink-0 relative">
           <div
             className="absolute top-0 left-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/50 z-10"
             onMouseDown={inspectorResize.onMouseDown}
