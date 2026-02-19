@@ -102,3 +102,10 @@ jobs:
             | **Windows** (64-bit) | `XLogger_${{ steps.version.outputs.VERSION }}_x64-setup.exe` |
 
             > **Note:** Ignore the "Source code" files below — download one of the installers above instead.
+
+            ### macOS — important first-launch step
+            After installing, open **Terminal** and run:
+            ```
+            xattr -cr /Applications/XLogger.app
+            ```
+            Then open XLogger normally. This is needed because the app is not signed with an Apple Developer certificate.

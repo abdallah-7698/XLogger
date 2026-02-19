@@ -18,7 +18,11 @@ Go to the [**Latest Release**](https://github.com/abdallah-7698/XLogger/releases
 
 1. Download the `.dmg` file for your chip (Apple Silicon or Intel)
 2. Open the `.dmg` and drag XLogger to **Applications**
-3. On first launch, right-click the app and select **Open** to bypass Gatekeeper
+3. Open Terminal and run:
+   ```bash
+   xattr -cr /Applications/XLogger.app
+   ```
+4. Open XLogger from Applications
 
 ### Windows installation
 
