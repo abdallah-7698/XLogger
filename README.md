@@ -4,6 +4,28 @@ A multiplatform IDE-style log viewer built with Tauri, React, and Rust. XLogger 
 
 ![macOS](https://img.shields.io/badge/macOS-supported-brightgreen) ![Windows](https://img.shields.io/badge/Windows-supported-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
+## Download
+
+Go to the [**Latest Release**](https://github.com/abdallah-7698/XLogger/releases/latest) page and download the installer for your platform:
+
+| Platform | File | Notes |
+|----------|------|-------|
+| **macOS** (Apple Silicon) | `XLogger_x.x.x_aarch64.dmg` | M1, M2, M3, M4 Macs |
+| **macOS** (Intel) | `XLogger_x.x.x_x64.dmg` | Older Intel Macs |
+| **Windows** | `XLogger_x.x.x_x64-setup.exe` | Windows 10/11 |
+
+### macOS installation
+
+1. Download the `.dmg` file for your chip (Apple Silicon or Intel)
+2. Open the `.dmg` and drag XLogger to **Applications**
+3. On first launch, right-click the app and select **Open** to bypass Gatekeeper
+
+### Windows installation
+
+1. Download the `.exe` installer
+2. Run the installer and follow the prompts
+3. XLogger will be available in your Start menu
+
 ## Features
 
 - **Folder-based log loading** — Select a folder and XLogger recursively scans for `.jsonl`, `.log`, and `.json` files
@@ -12,29 +34,13 @@ A multiplatform IDE-style log viewer built with Tauri, React, and Rust. XLogger 
 - **Severity levels** — Filter by Debug, Info, Warning, Error, and Critical
 - **Full-text search** — Search across messages, files, functions, threads, and categories
 - **Network inspector** — Split Request/Response view with headers, body, and status
-- **JSON syntax highlighting** — Color-coded keys, strings, numbers, and booleans with proper indentation
+- **JSON syntax highlighting** — Color-coded keys, strings, numbers, and booleans
 - **Bracket selection** — Double-click any `{`, `}`, `[`, or `]` to select the entire block
 - **Resizable panels** — Drag to resize the sidebar, log table, and details panel
 - **Dark/Light theme** — Toggle between dark and light mode
 - **Copy support** — Copy any field or full log entry to clipboard
 - **Keyboard navigation** — Arrow keys to navigate, Cmd+C to copy, Cmd+F to search
 - **Session persistence** — Remembers last folder and window size across restarts
-
-## Download
-
-### macOS
-
-1. Go to [Releases](https://github.com/abdallah-7698/XLogger/releases)
-2. Download `XLogger_x.x.x_aarch64.dmg` (Apple Silicon) or `XLogger_x.x.x_x64.dmg` (Intel)
-3. Open the `.dmg` and drag XLogger to Applications
-4. On first launch, right-click the app and select "Open" to bypass Gatekeeper
-
-### Windows
-
-1. Go to [Releases](https://github.com/abdallah-7698/XLogger/releases)
-2. Download `XLogger_x.x.x_x64-setup.exe`
-3. Run the installer and follow the prompts
-4. XLogger will be available in your Start menu
 
 ## Log Format
 
@@ -95,34 +101,7 @@ XLogger reads JSON log files (`.jsonl`, `.log`, `.json`) with one JSON object pe
 | `networkDetails` | object | Network request/response data |
 | `performanceDetails` | object | Performance timing data |
 
-XLogger also handles plain text lines — they are wrapped as `info` level `state` category logs.
-
-## Building from Source
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18+
-- [Rust](https://www.rust-lang.org/tools/install)
-- [Tauri CLI](https://tauri.app/start/)
-
-### Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run in development mode
-npx tauri dev
-```
-
-### Production Build
-
-```bash
-# Build for your current platform
-npx tauri build
-```
-
-The built app will be in `src-tauri/target/release/bundle/`.
+Plain text lines are also supported — they are wrapped as `info` level `state` category logs.
 
 ## Keyboard Shortcuts
 
@@ -135,6 +114,29 @@ The built app will be in `src-tauri/target/release/bundle/`.
 | `Cmd/Ctrl + P` | Pause/Resume |
 | `Cmd/Ctrl + C` | Copy selected log |
 | `Arrow Up/Down` | Navigate logs |
+
+## Building from Source
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v18+
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Tauri CLI](https://tauri.app/start/)
+
+### Development
+
+```bash
+npm install
+npx tauri dev
+```
+
+### Production Build
+
+```bash
+npx tauri build
+```
+
+The built app will be in `src-tauri/target/release/bundle/`.
 
 ## Tech Stack
 
