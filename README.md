@@ -16,13 +16,9 @@ Go to the [**Latest Release**](https://github.com/abdallah-7698/XLogger/releases
 
 ### macOS installation
 
-1. Download the `.dmg` file for your chip (Apple Silicon or Intel)
+1. Download the `.dmg` for your chip **and** `install-mac.command` from the [Releases page](https://github.com/abdallah-7698/XLogger/releases/latest)
 2. Open the `.dmg` and drag XLogger to **Applications**
-3. Open Terminal and run:
-   ```bash
-   xattr -cr /Applications/XLogger.app
-   ```
-4. Open XLogger from Applications
+3. Double-click `install-mac.command` — it fixes macOS permissions and opens the app
 
 ### Windows installation
 

@@ -81,6 +81,7 @@ jobs:
         run: |
           mkdir -p release-files
           find artifacts -type f \( -name "*.dmg" -o -name "*.exe" \) -exec cp {} release-files/ \;
+          cp scripts/install-mac.command release-files/
           ls -la release-files/
 
       - name: Get version
@@ -101,11 +102,12 @@ jobs:
             | **macOS** (Intel) | `XLogger_${{ steps.version.outputs.VERSION }}_x64.dmg` |
             | **Windows** (64-bit) | `XLogger_${{ steps.version.outputs.VERSION }}_x64-setup.exe` |
 
-            > **Note:** Ignore the "Source code" files below — download one of the installers above instead.
+            ### macOS installation
+            1. Download the `.dmg` **and** `install-mac.command`
+            2. Open the `.dmg` and drag XLogger to **Applications**
+            3. Double-click `install-mac.command` — it fixes macOS permissions and opens the app
 
-            ### macOS — important first-launch step
-            After installing, open **Terminal** and run:
-            ```
-            xattr -cr /Applications/XLogger.app
-            ```
-            Then open XLogger normally. This is needed because the app is not signed with an Apple Developer certificate.
+            ### Windows installation
+            1. Download the `.exe` and run the installer
+
+            > **Note:** Ignore the "Source code" files below.
