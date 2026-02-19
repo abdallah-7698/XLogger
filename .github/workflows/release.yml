@@ -83,9 +83,22 @@ jobs:
           find artifacts -type f \( -name "*.dmg" -o -name "*.exe" \) -exec cp {} release-files/ \;
           ls -la release-files/
 
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: false
-          generate_release_notes: true
           files: release-files/*
+          body: |
+            ## Download
+
+            | Platform | File |
+            |----------|------|
+            | **macOS** (Apple Silicon — M1/M2/M3/M4) | `XLogger_${{ steps.version.outputs.VERSION }}_aarch64.dmg` |
+            | **macOS** (Intel) | `XLogger_${{ steps.version.outputs.VERSION }}_x64.dmg` |
+            | **Windows** (64-bit) | `XLogger_${{ steps.version.outputs.VERSION }}_x64-setup.exe` |
+
+            > **Note:** Ignore the "Source code" files below — download one of the installers above instead.
